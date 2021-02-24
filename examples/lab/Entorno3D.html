@@ -1,0 +1,1498 @@
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>NINUS EVENT</title>
+  <meta name="description" content="Dev Example — Networked-Aframe">
+
+
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <!-- -------********----------------Aframe--------*********------- -->
+  <script src="https://aframe.io/releases/1.0.3/aframe.min.js"></script>
+  <script src="https://unpkg.com/aframe-randomizer-components@^3.0.1/dist/aframe-randomizer-components.min.js"></script>
+  <script
+    src="https://unpkg.com/aframe-particle-system-component@1.0.5/dist/aframe-particle-system-component.min.js"></script>
+
+  <!-- -------********---------------- NetWorked Aframe  --------*********------- -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.slim.js"></script>
+  <script src="https://unpkg.com/networked-aframe/dist/networked-aframe.min.js"></script>
+
+
+  <!-- -------********----------------fisica para las colisiones --------*********------- -->
+  <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.0/dist/aframe-extras.min.js"></script>
+  <script src="//cdn.rawgit.com/donmccurdy/aframe-physics-system/v4.0.1/dist/aframe-physics-system.min.js"></script>
+
+  <!-- -------********---------------- Ambiente --------*********------- -->
+  <script src="https://unpkg.com/aframe-environment-component@1.1.0/dist/aframe-environment-component.min.js"></script>
+
+  <!-- -------********---------------- Logica --------*********------- -->
+  <script src="/index.js"></script>
+
+  <!-- -------******** ---------------- Hoja de estilos  --------*********-------------->
+  <link href="/estilos.css" rel="stylesheet" type="text/css">
+
+  <!-- -------******** ---------------- Movimiento desde el celular  --------*********-------------->
+  <script
+    src="https://rawgit.com/Ctrl-Alt-Zen/aframe-mobile-controls/master/components/twoway-motion/twoway-motion.js"></script>
+
+  <!-- -------******** ---------------- Logica de la reproducción de video  --------*********-------------->
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script src="/demo.js"></script>
+
+</head>
+
+
+<body>
+
+  <!-- interfaz para ingresar a una sala nueva o existente  -->
+  <div
+    style="  z-index: 1; position: absolute;  width: 100%; display: flex; justify-content: center; align-items: center; ">
+
+    <div id="InterSalaID" class="inter-sala">
+      <h3> Bienvenidos </h3>
+      <input placeholder=" ID de sala" class="input1" type="number" id="Idsalaexistente">
+      <input placeholder=" Nickname" class="input1" id="nick" autocomplete="off">
+      <input class="boton1" type="button" onclick="IngresaIdSalaExistente()" value="Ingresar">
+      <input class="boton1" type="button" onclick="GeneraIDSala()" value="Sala nueva">
+    </div>
+
+  </div>
+
+    <!-- En donde se muestra el video  -->
+  <div class="mineVideo">
+    <!-- En donde se muestra el video  -->
+    <div class="minControlesVid">
+      <i id="iconOcultarVid" class="Large material-icons" onclick="ocultarMostrarVid()">visibility_off</i>
+    </div>
+
+    <div id="idVideoYoutube" class="envVideo">
+      <div id="playerVideo" class="dimVideo"></div>
+    </div>
+
+  </div>
+
+
+  <!-- En donde se muestran las instrucciónes para el PC-->
+  <div class="mineInstruccionesPc">
+    <!-- controles vista de instrucciónes  -->
+    <div class="minControlesInsPc">
+      <i id="iconOcultarInsPc" class="Large material-icons" onclick="ocultarMostrarIns()">visibility_off</i>
+    </div>
+
+    <div class="envoInstr">
+      <img id="IdinstrPC" class='instrucPC' src="https://i.ibb.co/BBBZDkk/pc.png" alt="Controles" width="350"
+        height="328">
+    </div>
+  </div>
+
+
+  <!-- En donde se muestran las instrucciónes para el celular-->
+  <div class="mineInstruccionesMov">
+
+    <!-- controles vista de instrucciónes  -->
+    <div class="minControlesInsMov">
+      <i id="iconOcultarInsMov" class="Large material-icons" onclick="ocultarMostrarInsMov()">visibility_off</i>
+    </div>
+
+    <div class="envoInstrMov">
+      <img id="IdinstrMov" class='instrucMovil' src="https://i.ibb.co/pf66Pnh/cel.png" alt="Controles" width="400"
+        height="400">
+    </div>
+
+  </div>
+
+<!-- ********  Loader **********  -->
+  <div Class="loaderDeem" id="idPreloadre">
+    <div class="backLoader">
+      
+      <div class="lds-roller">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- En donde está todo Aframe  -->
+  <a-scene embedded style="margin-top: 0px;" id=base background="color: #FAFAFA" light="defaultLightsEnabled: true"
+    renderer="antialias: true;
+                colorManagement: true;
+                sortObjects: true;
+                physicallyCorrectLights: true;
+                maxCanvasWidth: 1920;
+                maxCanvasHeight: 1920;" networked-scene="room: dev;
+                        adapter: webrtc;
+                        debug:true">
+
+    <a-assets>
+
+      <!-- ***********  imagenes Stand1   ************* -->
+      <img id="sky" src="/imagenes/sky.jpg">
+      <img id="piso" material="emissive: #000000" scale="51.689 62.36035 175" position="1.02624 0 -13.04833"
+          geometry="height: 1; primitive: plane" static-body="sphereRadius: NaN" src="/imagenes/PinoPiso.jpg">
+
+      <!-- imagenes -->
+
+      <img id="letrero" material="color: #ffffff; emissive: #232323" rotation="0 0 0"
+          src="imagenes/5_bienvenidos.png"> <!-- imagenes muro -->
+
+
+      <!--  ********************** imagenes cargadas ******************** ------->
+
+      <!-- imagenes Stand1 -->
+      <img id="fondost1" src="imagenes/11_fondo_ninus.png"> <!-- imagenes fondo -->
+      <img id="cajast1" src="imagenes/33_counter_ninus.png"> <!-- imagenes caja -->
+      <img id="paredst1" src="imagenes/55_cenefa_ninus.png"> <!-- imagenes pared -->
+      <img id="murost1" src="imagenes/22_columna_ninus.png"> <!-- imagenes muro -->
+
+       <!-- imagenes Stand2 -->
+       <img id="fondost2" src="imagenes/11_fondo_ninus.png"> <!-- imagenes fondo -->
+       <img id="cajast12" src="imagenes/33_counter_ninus.png"> <!-- imagenes caja -->
+       <img id="paredst2" src="imagenes/55_cenefa_ninus.png"> <!-- imagenes pared -->
+       <img id="murost2" src="imagenes/22_columna_ninus.png"> <!-- imagenes muro -->
+
+      <!--  ********************** imagenes cargadas ******************** ------->
+
+      <!-- Templates -->
+      <!-- Avatar -->
+      <template id="avatar-template">
+        <a-entity position="0 3 0" class="avatar">
+          <a-entity class="nametag" text="value: Hello World; align:center;" position="0 1.1 0" rotation="0 180 0"
+            scale="8 8 8"></a-entity>
+          <a-sphere class="head" color="#ffffff" scale="0.45 0.5 0.4" position="0 0.3 0"></a-sphere>
+          <a-entity class="face" position="0 0.35 0">
+            <a-sphere class="eye" color="#efefef" position="0.16 0.1 -0.35" scale="0.12 0.12 0.12">
+              <a-sphere class="pupil" color="#000" position="0 0 -1" scale="0.2 0.2 0.2"></a-sphere>
+            </a-sphere>
+            <a-sphere class="eye" color="#efefef" position="-0.16 0.1 -0.35" scale="0.12 0.12 0.12">
+              <a-sphere class="pupil" color="#000" position="0 0 -1" scale="0.2 0.2 0.2"></a-sphere>
+            </a-sphere>
+          </a-entity>
+        </a-entity>
+      </template> <!-- /avatar -->
+      <!-- /Templates -->
+    </a-assets>
+
+    <a-entity id="camera" position="0 0.6 0">
+      <a-entity id="player" twoway-motion="speed: 70" networked="template:#avatar-template;attachTemplateToLocal:true;"
+        camera position="0 2 0" spawn-in-circle="radius:3" wasd-controls="acceleration: 70" look-controls
+        kinematic-body="mass: 1; radius: 0.5">
+
+        <a-sphere class="head" visible="false" random-color></a-sphere>
+        <a-cursor>
+        </a-cursor>
+      </a-entity>
+    </a-entity>
+
+
+    <!-- CIELO  -->
+    <a-sky src="#sky"></a-sky>
+
+    <!-- AMBIENTE ARBOLES -->
+    <a-entity id="fondo" position="3.66155 -0.3934 -16.60432"
+      environment="preset: forest;  fog:0; groundColor: #0b6a4a; grid: cross; dressingAmount:300 ; dressingColor: #159324; gridColor: #32c83c; groundColor2: #37c862; horizonColor: #72e37a; skyColor: #6394bf; shadow: false; groundTexture: squares; lighting: distant; playArea: 1.14; skyType: none">
+    </a-entity>
+
+    <!-- Suelo madera-->
+    <a-plane id="piso" src="#piso" visible="true" position="1.02624 0 -13.04833" scale="51.689 62.36035 175"
+      rotation="-90 0 0"></a-plane>
+
+    <a-entity light="type:  ambient;  color:  #ffffff;  groundColor:  #ededed;  intensity:  1.5" position="0 3 0">
+    </a-entity>
+
+
+    <!-- Plano sobre el cual estan los avatar es transparente -->
+    <a-plane static-body position="0.30655 0 -17.61084"
+      material="side: double; color: #EF2D5E; transparent: true; opacity: 0" scale="175 175 175" rotation="-90 0 0">
+    </a-plane>
+
+
+    <!-- ********************************************** Todo el mapa ************************************************ -->
+    <a-entity id=mapastands>
+
+      <a-entity id=entrada>
+          <a-box id="vertical" rotation="0 0 0" static-body="sphereRadius: NaN" static-body scale="0.7 4 0.2"
+              position="-1.8047 1.82472 -3.79" material="color: "></a-box>
+          <a-box id="vertical1" rotation="0 0 -8" geometry="primitive: box" static-body="sphereRadius: NaN"
+              static-body scale="0.6 4 0.2" position="-2.14809 1.80201 -3.79" material="color: "></a-box>
+          <a-box id="vertical2" static-body scale="0.7 4 0.2" position="3.20594 1.86797 -3.79"
+              material="color: #ffffff"></a-box>
+          <a-box id="vertical3" rotation="0 0 8" static-body scale="0.6 4 0.2" position="3.5586 1.84724 -3.79"
+              material="color: #FFF"></a-box>
+          <a-box id="hori" scale="5.1 0.8 0.2" position="0.71514 3.70877 -3.78" material="color: #ffffff"></a-box>
+          <a-plane id="letreron" material="color: #dee2e3; blending: multiply" static-body="sphereRadius: NaN" src="#letrero"
+              width="20" height="20" position="0.69611 3.71666 -3.64332" rotation="0 0 0" static-body
+              scale="0.256 0.04 0.45">
+          </a-plane>
+          <a-plane id="t1" geometry="primitive: triangle" material="color: #dee2e3" static-body="sphereRadius: NaN" 
+              width="20" height="20" position="-2.0751 0.51543 -3.65082" rotation="0 0 0" static-body
+              scale="1.2 1 1.5">
+          </a-plane>
+          <a-plane id="t2" geometry="primitive: triangle" material="color: #dee2e3" static-body="sphereRadius: NaN" 
+              width="20" height="20" position="3.39427 1.50565 -3.65113" rotation="0 0 -90" static-body
+              scale="1 1.05 0.5">
+          </a-plane>
+          <a-plane id="t3" geometry="primitive: triangle" material="color: #dee2e3" static-body="sphereRadius: NaN" 
+              width="20" height="20" position="-1.96772 1.44563 -3.59045" rotation="0 0 90" static-body
+              scale="1 1 0.5">
+          </a-plane>
+          <a-plane id="t4" geometry="primitive: triangle" material="color: #dee2e3" static-body="sphereRadius: NaN" 
+              width="20" height="20" position="3.41723 0.51543 -3.64569" rotation="0 0 0" static-body
+              scale="1.2 1 1.5">
+          </a-plane>
+          <a-plane id="t5" geometry="primitive: triangle" material="color: #dee2e3" static-body="sphereRadius: NaN" 
+              width="20" height="20" position="3.30235 2.3519 -3.65579" rotation="0 0 98" static-body
+              scale="1 0.9 0.5">
+          </a-plane>
+          <a-plane id="t6" geometry="primitive: triangle" material="color: #dee2e3" static-body="sphereRadius: NaN" 
+              width="20" height="20" position="-1.87169 2.26164 -3.64583" rotation="0 0 -98" static-body
+              scale="1 0.87 0.5">
+          </a-plane>
+         
+
+
+      </a-entity>
+
+
+      <!-------------------------------------------Stand1------------------------------------------------>
+
+      <a-box id="contenedor1" material="color: #043ce7"
+          geometry="primitive: plane; skipCache: false; buffer: true; radius: 0.1; height: 0.001; segmentsHeight: 1"
+          visible="true" rotation="0 0 0" position="-10.38202 0.82133 -7.90957">
+          <a-entity id="stand1" rotation="0 0 0" position="12 -1 -30">
+
+              <a-box static-body id="pared11" material="color:#03bfea" static-body="sphereRadius: NaN"
+                  position="-11.92073 1.58913 28.22172" static-body scale="3 2.5 0.04" color="#2f2fff"></a-box>
+              <a-box static-body id="pared21" geometry="depth: 3" rotation="0 90 0" material="color: #03bfea"
+                  static-body="sphereRadius: NaN" position="-13.41915 1.59 29.71183" static-body
+                  scale="3.03 2.5 0.015" color="#2f2fff"></a-box>
+              <a-box static-body id="muro1" geometry="depth: 3" rotation="0 90 0" material="color: #03bfea"
+                  static-body="sphereRadius: NaN" position="-10.65353 1.58542 31.14873" static-body
+                  scale="0.092 2.55 0.16" color="#2f2fff"></a-box>
+              <a-box id="caja11" geometry="depth: 3" rotation="0 90 0" material="color: #f4f4f4"
+                  static-body="sphereRadius: NaN" position="-13.23004 0.59932 30.68584" static-body
+                  scale="1 0.53 0.12" color="#2f2fff"></a-box>
+              <a-box id="caja61" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.045 0.55722 30.93588" static-body
+                  scale="0.46 0.4 0.01" color="#2f2fff"></a-box>
+              <a-box id="caja51" geometry="depth: 3; primitive: cylinder" rotation="0 0 90" material="color: "
+                  static-body="sphereRadius: NaN" position="-13.03013 0.58519 30.73318" static-body
+                  scale="0.015 0.01 0.015" color="#2f2fff"></a-box>
+              <a-box id="caja21" visible="true" geometry="depth: 3; primitive: cylinder" rotation="0 0 90"
+                  material="color: #FFF" static-body="sphereRadius: NaN" position="-13.02855 0.58375 30.63956"
+                  static-body scale="0.015 0.01 0.015" color="#2f2fff"></a-box>
+              <a-box static-body id="caja3" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.04476 0.56017 30.43775" static-body
+                  scale="0.46 0.4 0.01" color="#2f2fff"></a-box>
+              <a-box id="caja4" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.20476 0.82284 30.686" static-body
+                  scale="1 0.08 0.125" color="#2f2fff"></a-box>
+              <a-box static-body id="caja" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-10.66088 0.78075 30.76296" static-body
+                  scale="0.7 0.98 0.13" color="#2f2fff"></a-box>
+              <a-box static-body id="tabla" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.1787 1.55114 30.7087" static-body
+                  scale="1 0.025 0.13" color="#2f2fff"></a-box>
+              <a-box static-body id="tabla1" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.1787 2.2161 30.709" static-body
+                  scale="1 0.025 0.13" color="#2f2fff"></a-box>
+              <a-box id="techo1" geometry="depth: 3" rotation="0 0 0" material="color: #dbe2e6"
+                  static-body="sphereRadius: NaN" position="-12.12183 2.8439 28.36776" static-body
+                  scale="2.5 0.04 0.11" color="#2f2fff"></a-box>
+              <a-box static-bodyid="techo2" geometry="depth: 3" rotation="0 90 0" material="color: #dbe2e6"
+                  static-body="sphereRadius: NaN" position="-13.26473 2.84361 29.46904" static-body
+                  scale="2.53 0.04 0.1" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston" geometry="depth: 3" rotation="0 90 0" material="color: #e3eaed"
+                  static-body="sphereRadius: NaN" position="-10.46331 2.81367 29.67001" static-body
+                  scale="2.86 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston1" geometry="depth: 3" rotation="0 90 0" material="color: #e3eaed"
+                  static-body="sphereRadius: NaN" position="-10.57351 2.81367 29.67001" static-body
+                  scale="2.86 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston2" geometry="depth: 3" rotation="0 90 0" material="color: #e1e4e8"
+                  static-body="sphereRadius: NaN" position="-10.6802 2.81482 29.67371" static-body
+                  scale="2.86 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston3" geometry="depth: 3" rotation="0 90 0" material="color: #e3eaed"
+                  static-body="sphereRadius: NaN" position="-10.78291 2.81367 29.67001" static-body
+                  scale="2.86 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston4" geometry="depth: 3" rotation="0 90 0" material="color: #e3eaed"
+                  static-body="sphereRadius: NaN" position="-10.88925 2.81367 29.67001" static-body
+                  scale="2.86 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-bodyid="techolisth" geometry="depth: 3" rotation="0 0 0" material="color: #d8e1e9"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.8135 30.73497" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techolisth1" geometry="depth: 3" rotation="0 0 0" material="color: #d8e1e9"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.81141 30.83995" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box id="techolisth2" geometry="depth: 3" rotation="0 0 0" material="color: #d8e1e9"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.81093 30.94764" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techolisth3" geometry="depth: 3" rotation="0 0 0" material="color: #e4eaec"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.81245 31.05613" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techolisth4" geometry="depth: 3" rotation="0 0 0" material="color: #e5ebf0"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.81761 31.16" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+
+              <a-box id="lampara" geometry="depth: 3; primitive: cylinder" rotation="0 0 0"
+                  material="color: #ffffff; emissive: #1e1e1e" static-body="sphereRadius: NaN"
+                  position="-13.22667 2.81935 29.84401" static-body scale="0.07 0.03 0.07" color="#2f2fff">
+              </a-box>
+              <a-box id="lampara1" geometry="depth: 3; primitive: cylinder" rotation="0 0 0"
+                  material="color: #ffffff; emissive: #1e1e1e" static-body="sphereRadius: NaN"
+                  position="-13.23848 2.81935 28.92018" static-body scale="0.07 0.03 0.07" color="#2f2fff">
+              </a-box>
+              <a-box id="lampara2" geometry="depth: 3; primitive: cylinder" rotation="0 0 0"
+                  material="color: #ffffff; emissive: #1e1e1e" static-body="sphereRadius: NaN"
+                  position="-12.63923 2.81935 28.39276" static-body scale="0.07 0.03 0.07" color="#2f2fff">
+              </a-box>
+              <a-box id="lampara3" geometry="depth: 3; primitive: cylinder" rotation="0 0 0"
+                  material="color: #ffffff; emissive: #1e1e1e" static-body="sphereRadius: NaN"
+                  position="-11.61025 2.81935 28.38695" static-body scale="0.07 0.03 0.07" color="#2f2fff">
+              </a-box>
+
+              <!-- imagenes -->
+              <a-plane id="imgcaja" static-body="sphereRadius: NaN" src="#cajast1"
+                  onclick='NewTab(vidSt1Caja)' width="20" height="20"
+                  position="-10.46 0.77862 30.75179" rotation="0 90 0" static-body scale="0.035 0.05 0.5">
+              </a-plane>
+              <a-plane id="imgpared1" material="blending: normal" static-body="sphereRadius: NaN" src="#fondost1"
+                  onclick='NewTab(vidSt1Fondo)' width="20" height="20"
+                  position="-13.378 1.55393 29.18707" rotation="0 90 0" static-body scale="0.095 0.125 0.5">
+              </a-plane>
+              <a-plane id="imgpared2" static-body="sphereRadius: NaN" src="#paredst1" width="20" height="20"
+                  position="-11.93797 1.66341 28.24805" rotation="0 0 0" static-body scale="0.15 0.045 0.2">
+              </a-plane>
+              <a-plane id="imgcol1" src="#murost1" static-body="sphereRadius: NaN" src="#murost1" width="20"
+                  height="20" position="-10.65269 1.58911 31.19859" rotation="0 0 0" static-body
+                  scale="0.024 0.127 0.05">
+              </a-plane>
+              <a-plane id="panel" visible="false" static-body="sphereRadius: NaN" width="20" height="20"
+                  position="-11.93762 2.46799 28.24363" rotation="0 0 0" static-body scale="0.15 0.036 0.5">
+              </a-plane>
+          </a-entity>
+      </a-box>
+
+
+      <!-------------------- Stand2---------------------------------------------------------------------------- -->
+      <a-box id="contenedor2" material="color: #03bfea"
+          geometry="primitive: plane; skipCache: false; buffer: true; radius: 0.1; height: 0.001; segmentsHeight: 1"
+          visible="true" rotation="0 0 0" position="-10.40021 0.82133 -11.02875">
+          <a-entity id="stand2" rotation="0 0 0" position="12 -1 -30">
+
+              <a-box static-body id="pared1" rotation="0 0 0" material="color: #03bfea"
+                  static-body="sphereRadius: NaN" position="-11.92056 1.56484 31.15809" static-body
+                  scale="3 2.5 0.04" color="#2f2fff"></a-box>
+              <a-box static-body id="pared2" geometry="depth: 3" rotation="0 90 0" material="color: #03bfea"
+                  static-body="sphereRadius: NaN" position="-13.41915 1.59 29.71183" static-body
+                  scale="3.03 2.5 0.015" color="#2f2fff"></a-box>
+              <a-box static-body id="muro" geometry="depth: 3" rotation="0 90 0" material="color: #03bfea"
+                  static-body="sphereRadius: NaN" position="-10.65196 1.48591 28.24414" static-body
+                  scale="0.092 2.69 0.16" color="#2f2fff"></a-box>
+              <a-box id="caja1" geometry="depth: 3" rotation="0 90 0" material="color: #f4f4f4"
+                  static-body="sphereRadius: NaN" position="-13.23004 0.59932 30.68584" static-body
+                  scale="1 0.53 0.12" color="#2f2fff"></a-box>
+              <a-box id="caja6" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.045 0.55722 30.93588" static-body
+                  scale="0.46 0.4 0.01" color="#2f2fff"></a-box>
+              <a-box id="caja5" geometry="depth: 3; primitive: cylinder" rotation="0 0 90" material="color: "
+                  static-body="sphereRadius: NaN" position="-13.03013 0.58519 30.73318" static-body
+                  scale="0.015 0.01 0.015" color="#2f2fff"></a-box>
+              <a-box id="caja2" visible="true" geometry="depth: 3; primitive: cylinder" rotation="0 0 90"
+                  material="color: #FFF" static-body="sphereRadius: NaN" position="-13.02855 0.58375 30.63956"
+                  static-body scale="0.015 0.01 0.015" color="#2f2fff"></a-box>
+              <a-box static-body id="caja3" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.04476 0.56017 30.43775" static-body
+                  scale="0.46 0.4 0.01" color="#2f2fff"></a-box>
+              <a-box id="caja4" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.20476 0.82284 30.686" static-body
+                  scale="1 0.08 0.125" color="#2f2fff"></a-box>
+              <a-box static-body id="caja" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-10.56805 0.67987 28.64446" static-body
+                  scale="0.7 0.98 0.13" color="#2f2fff"></a-box>
+              <a-box static-body id="tabla" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.1787 1.55114 30.7087" static-body
+                  scale="1 0.025 0.13" color="#2f2fff"></a-box>
+              <a-box static-body id="tabla1" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.1787 2.2161 30.709" static-body
+                  scale="1 0.025 0.13" color="#2f2fff"></a-box>
+              <a-box id="techo1" geometry="depth: 3" rotation="0 0 0" material="color: #dbe2e6"
+                  static-body="sphereRadius: NaN" position="-12.16455 2.8439 31.04211" static-body
+                  scale="2.5 0.04 0.11" color="#2f2fff"></a-box>
+              <a-box static-body id="techo2n" geometry="depth: 3" rotation="0 90 0" material="color: #dbe2e6"
+                  static-body="sphereRadius: NaN" position="-13.26473 2.84361 29.89907" static-body
+                  scale="2.53 0.04 0.1" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston" geometry="depth: 3" rotation="0 90 0" material="color: #e3eaed"
+                  static-body="sphereRadius: NaN" position="-10.46331 2.81367 29.72606" static-body
+                  scale="2.9 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston1" geometry="depth: 3" rotation="0 90 0" material="color: #e3eaed"
+                  static-body="sphereRadius: NaN" position="-10.57351 2.81367 29.726" static-body
+                  scale="2.9 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston2" geometry="depth: 3" rotation="0 90 0" material="color: #e1e4e8"
+                  static-body="sphereRadius: NaN" position="-10.6802 2.81482 29.726" static-body
+                  scale="2.9 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston3" geometry="depth: 3" rotation="0 90 0" material="color: #e3eaed"
+                  static-body="sphereRadius: NaN" position="-10.78291 2.81367 29.726" static-body
+                  scale="2.9 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston4" geometry="depth: 3" rotation="0 90 0" material="color: #e3eaed"
+                  static-body="sphereRadius: NaN" position="-10.88925 2.81367 29.726" static-body
+                  scale="2.9 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box id="techolisth" geometry="depth: 3" rotation="0 0 0" material="color: #d8e1e9"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.812 28.679" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techolisth1" geometry="depth: 3" rotation="0 0 0" material="color: #d8e1e9"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.812 28.23474" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box id="techolisth2" geometry="depth: 3" rotation="0 0 0" material="color: #d8e1e9"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.812 28.457" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techolisth3" geometry="depth: 3" rotation="0 0 0" material="color: #e4eaec"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.81245 28.346" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techolisth4" geometry="depth: 3" rotation="0 0 0" material="color: #e5ebf0"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.812 28.568" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+
+              <a-box id="lampara" geometry="depth: 3; primitive: cylinder" rotation="0 0 0"
+                  material="color: #ffffff; emissive: #1e1e1e" static-body="sphereRadius: NaN"
+                  position="-13.22667 2.81935 30.24712" static-body scale="0.07 0.03 0.07" color="#2f2fff">
+              </a-box>
+              <a-box id="lampara1" geometry="depth: 3; primitive: cylinder" rotation="0 0 0"
+                  material="color: #ffffff; emissive: #1e1e1e" static-body="sphereRadius: NaN"
+                  position="-13.26175 2.81935 29.34214" static-body scale="0.07 0.03 0.07" color="#2f2fff">
+              </a-box>
+              <a-box id="lampara2" geometry="depth: 3; primitive: cylinder" rotation="0 0 0"
+                  material="color: #ffffff; emissive: #1e1e1e" static-body="sphereRadius: NaN"
+                  position="-12.63923 2.81935 30.99159" static-body scale="0.07 0.03 0.07" color="#2f2fff">
+              </a-box>
+              <a-box id="lampara3" geometry="depth: 3; primitive: cylinder" rotation="0 0 0"
+                  material="color: #ffffff; emissive: #1e1e1e" static-body="sphereRadius: NaN"
+                  position="-11.61025 2.81935 30.99476" static-body scale="0.07 0.03 0.07" color="#2f2fff">
+              </a-box>
+
+              <!-- imagenes -->
+              <a-plane id="imgcaja" static-body="sphereRadius: NaN" src="#cajast1"
+                  onclick='NewTab("https://ninus.co/es/")' width="20" height="20"
+                  position="-10.36555 0.66836 28.63731" rotation="0 90 0" static-body scale="0.035 0.05 0.5">
+              </a-plane>
+              <a-plane id="imgpared1" static-body="sphereRadius: NaN" src="#fondost1"
+                  onclick='NewTab("https://ninus.co/es/")' width="20" height="20"
+                  position="-13.378 1.55393 29.22011" rotation="0 90 0" static-body scale="0.095 0.125 0.5">
+              </a-plane>
+              <a-plane id="imgpared22" static-body="sphereRadius: NaN" src="#paredst1" width="20" height="20"
+                  position="-11.93797 1.66341 31.12663" rotation="0 180 0" static-body scale="0.15 0.045 0.2">
+              </a-plane>
+              <a-plane id="imgcol" src="#murost1" static-body="sphereRadius: NaN" src="#murost1" width="20"
+                  height="20" position="-10.6471 1.48705 28.19314" rotation="0 180 0" static-body
+                  scale="0.024 0.1345 0.05">
+              </a-plane>
+              <a-plane id="panel" visible="false" static-body="sphereRadius: NaN" width="20" height="20"
+                  position="-11.93762 2.46799 28.24363" rotation="0 0 0" static-body scale="0.15 0.036 0.5">
+              </a-plane>
+          </a-entity>
+      </a-box>
+
+      <!-------------------------------------------Stand3 ------------------------------------------------>
+
+      <a-box id="contenedor3" material="color: #03bfea"
+          geometry="primitive: plane; skipCache: false; buffer: true; radius: 0.1; height: 0.001; segmentsHeight: 1"
+          visible="true" rotation="0 -90 0" position="-7.36931 0.82133 -18.34631">
+          <a-entity id="stand3" rotation="0 0 0" position="12 -1 -30">
+
+              <a-box static-body id="pared1" material="color: #03bfea" static-body="sphereRadius: NaN"
+                  position="-11.92073 1.58913 28.22172" static-body scale="3 2.5 0.04" color="#2f2fff"></a-box>
+              <a-box static-body id="pared2" geometry="depth: 3" rotation="0 90 0" material="color: #03bfea"
+                  static-body="sphereRadius: NaN" position="-13.41915 1.59 29.71183" static-body
+                  scale="3.03 2.5 0.015" color="#2f2fff"></a-box>
+              <a-box static-body id="muro" geometry="depth: 3" rotation="0 90 0" material="color: #03bfea"
+                  static-body="sphereRadius: NaN" position="-10.66159 1.52277 31.15322" static-body
+                  scale="0.092 2.69 0.16" color="#2f2fff"></a-box>
+              <a-box id="caja1" geometry="depth: 3" rotation="0 90 0" material="color: #f4f4f4"
+                  static-body="sphereRadius: NaN" position="-13.23004 0.59932 30.68584" static-body
+                  scale="1 0.53 0.12" color="#2f2fff"></a-box>
+              <a-box id="caja6" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.045 0.55722 30.93588" static-body
+                  scale="0.46 0.4 0.01" color="#2f2fff"></a-box>
+              <a-box id="caja5" geometry="depth: 3; primitive: cylinder" rotation="0 0 90" material="color: "
+                  static-body="sphereRadius: NaN" position="-13.03013 0.58519 30.73318" static-body
+                  scale="0.015 0.01 0.015" color="#2f2fff"></a-box>
+              <a-box id="caja2" visible="true" geometry="depth: 3; primitive: cylinder" rotation="0 0 90"
+                  material="color: #FFF" static-body="sphereRadius: NaN" position="-13.02855 0.58375 30.63956"
+                  static-body scale="0.015 0.01 0.015" color="#2f2fff"></a-box>
+              <a-box static-body id="caja3" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.04476 0.56017 30.43775" static-body
+                  scale="0.46 0.4 0.01" color="#2f2fff"></a-box>
+              <a-box id="caja4" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.20476 0.82284 30.686" static-body
+                  scale="1 0.08 0.125" color="#2f2fff"></a-box>
+              <a-box static-body id="cajac3" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-10.7327 0.71066 30.76296" static-body
+                  scale="0.7 0.98 0.13" color="#2f2fff"></a-box>
+              <a-box static-body id="tabla" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.1787 1.55114 30.7087" static-body
+                  scale="1 0.025 0.13" color="#2f2fff"></a-box>
+              <a-box static-body id="tabla1" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.1787 2.2161 30.709" static-body
+                  scale="1 0.025 0.13" color="#2f2fff"></a-box>
+              <a-box id="techo1" geometry="depth: 3" rotation="0 0 0" material="color: #dbe2e6"
+                  static-body="sphereRadius: NaN" position="-12.12183 2.8439 28.36776" static-body
+                  scale="2.5 0.04 0.11" color="#2f2fff"></a-box>
+              <a-box static-bodyid="techo2" geometry="depth: 3" rotation="0 90 0" material="color: #dbe2e6"
+                  static-body="sphereRadius: NaN" position="-13.26473 2.84361 29.46904" static-body
+                  scale="2.53 0.04 0.1" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston" geometry="depth: 3" rotation="0 90 0" material="color: #e3eaed"
+                  static-body="sphereRadius: NaN" position="-10.46331 2.81367 29.67001" static-body
+                  scale="2.86 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston1" geometry="depth: 3" rotation="0 90 0" material="color: #e3eaed"
+                  static-body="sphereRadius: NaN" position="-10.57351 2.81367 29.67001" static-body
+                  scale="2.86 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston2" geometry="depth: 3" rotation="0 90 0" material="color: #e1e4e8"
+                  static-body="sphereRadius: NaN" position="-10.6802 2.81482 29.67371" static-body
+                  scale="2.86 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston3" geometry="depth: 3" rotation="0 90 0" material="color: #e3eaed"
+                  static-body="sphereRadius: NaN" position="-10.78291 2.81367 29.67001" static-body
+                  scale="2.86 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston4" geometry="depth: 3" rotation="0 90 0" material="color: #e3eaed"
+                  static-body="sphereRadius: NaN" position="-10.88925 2.81367 29.67001" static-body
+                  scale="2.86 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-bodyid="techolisth" geometry="depth: 3" rotation="0 0 0" material="color: #d8e1e9"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.8135 30.73497" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techolisth1" geometry="depth: 3" rotation="0 0 0" material="color: #d8e1e9"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.81141 30.83995" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box id="techolisth2" geometry="depth: 3" rotation="0 0 0" material="color: #d8e1e9"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.81093 30.94764" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techolisth3" geometry="depth: 3" rotation="0 0 0" material="color: #e4eaec"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.81245 31.05613" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techolisth4" geometry="depth: 3" rotation="0 0 0" material="color: #e5ebf0"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.81761 31.16" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+
+              <a-box id="lampara" geometry="depth: 3; primitive: cylinder" rotation="0 0 0"
+                  material="color: #ffffff; emissive: #1e1e1e" static-body="sphereRadius: NaN"
+                  position="-13.22667 2.81935 29.84401" static-body scale="0.07 0.03 0.07" color="#2f2fff">
+              </a-box>
+              <a-box id="lampara1" geometry="depth: 3; primitive: cylinder" rotation="0 0 0"
+                  material="color: #ffffff; emissive: #1e1e1e" static-body="sphereRadius: NaN"
+                  position="-13.23848 2.81935 28.92018" static-body scale="0.07 0.03 0.07" color="#2f2fff">
+              </a-box>
+              <a-box id="lampara2" geometry="depth: 3; primitive: cylinder" rotation="0 0 0"
+                  material="color: #ffffff; emissive: #1e1e1e" static-body="sphereRadius: NaN"
+                  position="-12.63923 2.81935 28.39276" static-body scale="0.07 0.03 0.07" color="#2f2fff">
+              </a-box>
+              <a-box id="lampara3" geometry="depth: 3; primitive: cylinder" rotation="0 0 0"
+                  material="color: #ffffff; emissive: #1e1e1e" static-body="sphereRadius: NaN"
+                  position="-11.61025 2.81935 28.38695" static-body scale="0.07 0.03 0.07" color="#2f2fff">
+              </a-box>
+
+              <!-- imagenes -->
+              <a-plane id="imgcaja3" static-body="sphereRadius: NaN" src="#cajast1"
+                  onclick='NewTab("https://ninus.co/es/")' width="20" height="20"
+                  position="-10.46 0.72053 30.7652" rotation="0 90 0" static-body scale="0.035 0.05 0.5">
+              </a-plane>
+              <a-plane id="imgpared1" static-body="sphereRadius: NaN" src="#fondost1"
+                  onclick='NewTab("https://ninus.co/es/")' width="20" height="20"
+                  position="-13.378 1.55393 29.18707" rotation="0 90 0" static-body scale="0.095 0.125 0.5">
+              </a-plane>
+              <a-plane id="imgpared2" static-body="sphereRadius: NaN" src="#paredst1" width="20" height="20"
+                  position="-11.93797 1.66341 28.24805" rotation="0 0 0" static-body scale="0.15 0.045 0.2">
+              </a-plane>
+              <a-plane id="imgcol" src="#murost1" static-body="sphereRadius: NaN" src="#murost1" width="20"
+                  height="20" position="-10.66418 1.527 31.20381" rotation="0 0 0" static-body
+                  scale="0.024 0.1345 0.05">
+              </a-plane>
+              <a-plane id="panel" visible="false" static-body="sphereRadius: NaN" width="20" height="20"
+                  position="-11.93762 2.46799 28.24363" rotation="0 0 0" static-body scale="0.15 0.036 0.5">
+              </a-plane>
+          </a-entity>
+      </a-box>
+
+      <!-------------------------------------------Stand4 ------------------------------------------------>
+
+      <a-box id="contenedor4" material="color: #03bfea"
+          geometry="primitive: plane; skipCache: false; buffer: true; radius: 0.1; height: 0.001; segmentsHeight: 1"
+          visible="true" rotation="0 -90 0" position="-4.26646 0.82133 -18.38452">
+          <a-entity id="stand4" rotation="0 0 0" position="12 -1 -30">
+
+              <a-box static-body id="pared1" material="color: #03bfea" static-body="sphereRadius: NaN"
+                  position="-11.92073 1.58913 28.22172" static-body scale="3 2.5 0.04" color="#2f2fff"></a-box>
+              <a-box static-body id="pared2" geometry="depth: 3" rotation="0 90 0" material="color: #03bfea"
+                  static-body="sphereRadius: NaN" position="-13.41915 1.59 29.71183" static-body
+                  scale="3.03 2.5 0.015" color="#2f2fff"></a-box>
+
+              <a-box static-body id="muro4" geometry="depth: 3" rotation="0 90 0" material="color: #03bfea"
+                  static-body="sphereRadius: NaN" position="-10.66159 1.58048 31.15322" static-body
+                  scale="0.092 2.55 0.16" color="#2f2fff"></a-box>
+              <a-box id="caja1" geometry="depth: 3" rotation="0 90 0" material="color: #f4f4f4"
+                  static-body="sphereRadius: NaN" position="-13.23004 0.59932 30.68584" static-body
+                  scale="1 0.53 0.12" color="#2f2fff"></a-box>
+              <a-box id="caja6" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.045 0.55722 30.93588" static-body
+                  scale="0.46 0.4 0.01" color="#2f2fff"></a-box>
+              <a-box id="caja5" geometry="depth: 3; primitive: cylinder" rotation="0 0 90" material="color: "
+                  static-body="sphereRadius: NaN" position="-13.03013 0.58519 30.73318" static-body
+                  scale="0.015 0.01 0.015" color="#2f2fff"></a-box>
+              <a-box id="caja2" visible="true" geometry="depth: 3; primitive: cylinder" rotation="0 0 90"
+                  material="color: #FFF" static-body="sphereRadius: NaN" position="-13.02855 0.58375 30.63956"
+                  static-body scale="0.015 0.01 0.015" color="#2f2fff"></a-box>
+              <a-box static-body id="caja3" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.04476 0.56017 30.43775" static-body
+                  scale="0.46 0.4 0.01" color="#2f2fff"></a-box>
+              <a-box id="caja4" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.20476 0.82284 30.686" static-body
+                  scale="1 0.08 0.125" color="#2f2fff"></a-box>
+              <a-box static-body id="cajac4" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-10.64467 0.79565 30.76296" static-body
+                  scale="0.7 0.98 0.13" color="#2f2fff"></a-box>
+              <a-box static-body id="tabla" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.1787 1.55114 30.7087" static-body
+                  scale="1 0.025 0.13" color="#2f2fff"></a-box>
+              <a-box static-body id="tabla1" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.1787 2.2161 30.709" static-body
+                  scale="1 0.025 0.13" color="#2f2fff"></a-box>
+              <a-box id="techo1" geometry="depth: 3" rotation="0 0 0" material="color: #dbe2e6"
+                  static-body="sphereRadius: NaN" position="-12.12183 2.8439 28.36776" static-body
+                  scale="2.5 0.04 0.11" color="#2f2fff"></a-box>
+              <a-box static-bodyid="techo2" geometry="depth: 3" rotation="0 90 0" material="color: #dbe2e6"
+                  static-body="sphereRadius: NaN" position="-13.26473 2.84361 29.46904" static-body
+                  scale="2.53 0.04 0.1" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston" geometry="depth: 3" rotation="0 90 0" material="color: #e3eaed"
+                  static-body="sphereRadius: NaN" position="-10.46331 2.81367 29.67001" static-body
+                  scale="2.86 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston1" geometry="depth: 3" rotation="0 90 0" material="color: #e3eaed"
+                  static-body="sphereRadius: NaN" position="-10.57351 2.81367 29.67001" static-body
+                  scale="2.86 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston2" geometry="depth: 3" rotation="0 90 0" material="color: #e1e4e8"
+                  static-body="sphereRadius: NaN" position="-10.6802 2.81482 29.67371" static-body
+                  scale="2.86 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston3" geometry="depth: 3" rotation="0 90 0" material="color: #e3eaed"
+                  static-body="sphereRadius: NaN" position="-10.78291 2.81367 29.67001" static-body
+                  scale="2.86 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston4" geometry="depth: 3" rotation="0 90 0" material="color: #e3eaed"
+                  static-body="sphereRadius: NaN" position="-10.88925 2.81367 29.67001" static-body
+                  scale="2.86 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-bodyid="techolisth" geometry="depth: 3" rotation="0 0 0" material="color: #d8e1e9"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.8135 30.73497" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techolisth1" geometry="depth: 3" rotation="0 0 0" material="color: #d8e1e9"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.81141 30.83995" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box id="techolisth2" geometry="depth: 3" rotation="0 0 0" material="color: #d8e1e9"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.81093 30.94764" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techolisth3" geometry="depth: 3" rotation="0 0 0" material="color: #e4eaec"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.81245 31.05613" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techolisth4" geometry="depth: 3" rotation="0 0 0" material="color: #e5ebf0"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.81761 31.16" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+
+              <a-box id="lampara" geometry="depth: 3; primitive: cylinder" rotation="0 0 0"
+                  material="color: #ffffff; emissive: #1e1e1e" static-body="sphereRadius: NaN"
+                  position="-13.22667 2.81935 29.84401" static-body scale="0.07 0.03 0.07" color="#2f2fff">
+              </a-box>
+              <a-box id="lampara1" geometry="depth: 3; primitive: cylinder" rotation="0 0 0"
+                  material="color: #ffffff; emissive: #1e1e1e" static-body="sphereRadius: NaN"
+                  position="-13.23848 2.81935 28.92018" static-body scale="0.07 0.03 0.07" color="#2f2fff">
+              </a-box>
+              <a-box id="lampara2" geometry="depth: 3; primitive: cylinder" rotation="0 0 0"
+                  material="color: #ffffff; emissive: #1e1e1e" static-body="sphereRadius: NaN"
+                  position="-12.63923 2.81935 28.39276" static-body scale="0.07 0.03 0.07" color="#2f2fff">
+              </a-box>
+              <a-box id="lampara3" geometry="depth: 3; primitive: cylinder" rotation="0 0 0"
+                  material="color: #ffffff; emissive: #1e1e1e" static-body="sphereRadius: NaN"
+                  position="-11.61025 2.81935 28.38695" static-body scale="0.07 0.03 0.07" color="#2f2fff">
+              </a-box>
+
+              <!-- imagenes -->
+              <a-plane id="imgcaja4" static-body="sphereRadius: NaN" src="#cajast1"
+                  onclick='NewTab("https://ninus.co/es/")' width="20" height="20"
+                  position="-10.44524 0.79666 30.76648" rotation="0 90 0" static-body scale="0.035 0.0485 0.5">
+              </a-plane>
+              <a-plane id="imgpared1" static-body="sphereRadius: NaN" src="#fondost1"
+                  onclick='NewTab("https://ninus.co/es/")' width="20" height="20"
+                  position="-13.378 1.55393 29.18707" rotation="0 90 0" static-body scale="0.095 0.125 0.5">
+              </a-plane>
+              <a-plane id="imgpared2" static-body="sphereRadius: NaN" src="#paredst1" width="20" height="20"
+                  position="-11.93797 1.66341 28.24805" rotation="0 0 0" static-body scale="0.15 0.045 0.2">
+              </a-plane>
+              <a-plane id="imgcol4" src="#murost1" static-body="sphereRadius: NaN" src="#murost1" width="20"
+                  height="20" position="-10.66418 1.96127 31.10434" rotation="0 180 0" static-body
+                  scale="0.024 0.08 0.05">
+              </a-plane>
+              <a-plane id="panel" visible="false" static-body="sphereRadius: NaN" width="20" height="20"
+                  position="-11.93762 2.46799 28.24363" rotation="0 0 0" static-body scale="0.15 0.036 0.5">
+              </a-plane>
+          </a-entity>
+      </a-box>
+
+      <!-------------------------------------------Stand5------------------------------------------------>
+
+      <a-box id="contenedor5" material="color: #03bfea"
+          geometry="primitive: plane; skipCache: false; buffer: true; radius: 0.1; height: 0.001; segmentsHeight: 1"
+          visible="true" rotation="0 -90 0" position="-1.30641 0.82813 -18.42045">
+          <a-entity id="stand5" rotation="0 0 0" position="12 -1 -30">
+
+              <a-box static-body id="pared1" material="color: #03bfea" static-body="sphereRadius: NaN"
+                  position="-11.92073 1.58913 28.22172" static-body scale="3 2.5 0.04" color="#2f2fff"></a-box>
+              <a-box static-body id="pared2" geometry="depth: 3" rotation="0 90 0" material="color: #03bfea"
+                  static-body="sphereRadius: NaN" position="-13.41915 1.59 29.71183" static-body
+                  scale="3.03 2.5 0.015" color="#2f2fff"></a-box>
+
+              <a-box static-body id="muro4" geometry="depth: 3" rotation="0 90 0" material="color: #03bfea"
+                  static-body="sphereRadius: NaN" position="-10.66159 1.58048 31.15322" static-body
+                  scale="0.092 2.55 0.16" color="#2f2fff"></a-box>
+              <a-box id="caja1" geometry="depth: 3" rotation="0 90 0" material="color: #f4f4f4"
+                  static-body="sphereRadius: NaN" position="-13.23004 0.59932 30.68584" static-body
+                  scale="1 0.53 0.12" color="#2f2fff"></a-box>
+              <a-box id="caja6" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.045 0.55722 30.93588" static-body
+                  scale="0.46 0.4 0.01" color="#2f2fff"></a-box>
+              <a-box id="caja5" geometry="depth: 3; primitive: cylinder" rotation="0 0 90" material="color: "
+                  static-body="sphereRadius: NaN" position="-13.03013 0.58519 30.73318" static-body
+                  scale="0.015 0.01 0.015" color="#2f2fff"></a-box>
+              <a-box id="caja2" visible="true" geometry="depth: 3; primitive: cylinder" rotation="0 0 90"
+                  material="color: #FFF" static-body="sphereRadius: NaN" position="-13.02855 0.58375 30.63956"
+                  static-body scale="0.015 0.01 0.015" color="#2f2fff"></a-box>
+              <a-box static-body id="caja3" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.04476 0.56017 30.43775" static-body
+                  scale="0.46 0.4 0.01" color="#2f2fff"></a-box>
+              <a-box id="caja4" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.20476 0.82284 30.686" static-body
+                  scale="1 0.08 0.125" color="#2f2fff"></a-box>
+              <a-box static-body id="cajac4" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-10.64467 0.79565 30.76296" static-body
+                  scale="0.7 0.98 0.13" color="#2f2fff"></a-box>
+              <a-box static-body id="tabla" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.1787 1.55114 30.7087" static-body
+                  scale="1 0.025 0.13" color="#2f2fff"></a-box>
+              <a-box static-body id="tabla1" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.1787 2.2161 30.709" static-body
+                  scale="1 0.025 0.13" color="#2f2fff"></a-box>
+              <a-box id="techo1" geometry="depth: 3" rotation="0 0 0" material="color: #dbe2e6"
+                  static-body="sphereRadius: NaN" position="-12.12183 2.8439 28.36776" static-body
+                  scale="2.5 0.04 0.11" color="#2f2fff"></a-box>
+              <a-box static-bodyid="techo2" geometry="depth: 3" rotation="0 90 0" material="color: #dbe2e6"
+                  static-body="sphereRadius: NaN" position="-13.26473 2.84361 29.46904" static-body
+                  scale="2.53 0.04 0.1" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston" geometry="depth: 3" rotation="0 90 0" material="color: #e3eaed"
+                  static-body="sphereRadius: NaN" position="-10.46331 2.81367 29.67001" static-body
+                  scale="2.86 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston1" geometry="depth: 3" rotation="0 90 0" material="color: #e3eaed"
+                  static-body="sphereRadius: NaN" position="-10.57351 2.81367 29.67001" static-body
+                  scale="2.86 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston2" geometry="depth: 3" rotation="0 90 0" material="color: #e1e4e8"
+                  static-body="sphereRadius: NaN" position="-10.6802 2.81482 29.67371" static-body
+                  scale="2.86 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston3" geometry="depth: 3" rotation="0 90 0" material="color: #e3eaed"
+                  static-body="sphereRadius: NaN" position="-10.78291 2.81367 29.67001" static-body
+                  scale="2.86 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston4" geometry="depth: 3" rotation="0 90 0" material="color: #e3eaed"
+                  static-body="sphereRadius: NaN" position="-10.88925 2.81367 29.67001" static-body
+                  scale="2.86 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-bodyid="techolisth" geometry="depth: 3" rotation="0 0 0" material="color: #d8e1e9"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.8135 30.73497" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techolisth1" geometry="depth: 3" rotation="0 0 0" material="color: #d8e1e9"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.81141 30.83995" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box id="techolisth2" geometry="depth: 3" rotation="0 0 0" material="color: #d8e1e9"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.81093 30.94764" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techolisth3" geometry="depth: 3" rotation="0 0 0" material="color: #e4eaec"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.81245 31.05613" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techolisth4" geometry="depth: 3" rotation="0 0 0" material="color: #e5ebf0"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.81761 31.16" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+
+              <a-box id="lampara" geometry="depth: 3; primitive: cylinder" rotation="0 0 0"
+                  material="color: #ffffff; emissive: #1e1e1e" static-body="sphereRadius: NaN"
+                  position="-13.22667 2.81935 29.84401" static-body scale="0.07 0.03 0.07" color="#2f2fff">
+              </a-box>
+              <a-box id="lampara1" geometry="depth: 3; primitive: cylinder" rotation="0 0 0"
+                  material="color: #ffffff; emissive: #1e1e1e" static-body="sphereRadius: NaN"
+                  position="-13.23848 2.81935 28.92018" static-body scale="0.07 0.03 0.07" color="#2f2fff">
+              </a-box>
+              <a-box id="lampara2" geometry="depth: 3; primitive: cylinder" rotation="0 0 0"
+                  material="color: #ffffff; emissive: #1e1e1e" static-body="sphereRadius: NaN"
+                  position="-12.63923 2.81935 28.39276" static-body scale="0.07 0.03 0.07" color="#2f2fff">
+              </a-box>
+              <a-box id="lampara3" geometry="depth: 3; primitive: cylinder" rotation="0 0 0"
+                  material="color: #ffffff; emissive: #1e1e1e" static-body="sphereRadius: NaN"
+                  position="-11.61025 2.81935 28.38695" static-body scale="0.07 0.03 0.07" color="#2f2fff">
+              </a-box>
+
+              <!-- imagenes -->
+              <a-plane id="imgcaja4" static-body="sphereRadius: NaN" src="#cajast1"
+                  onclick='NewTab("https://ninus.co/es/")' width="20" height="20"
+                  position="-10.44524 0.79666 30.76648" rotation="0 90 0" static-body scale="0.035 0.0485 0.5">
+              </a-plane>
+
+              <a-plane id="imgpared1" static-body="sphereRadius: NaN" src="#fondost1"
+                  onclick='NewTab("https://ninus.co/es/")' width="20" height="20"
+                  position="-13.378 1.55393 29.18707" rotation="0 90 0" static-body scale="0.095 0.125 0.5">
+              </a-plane>
+              <a-plane id="imgpared2" static-body="sphereRadius: NaN" src="#paredst1" width="20" height="20"
+                  position="-11.93797 1.66341 28.24805" rotation="0 0 0" static-body scale="0.15 0.045 0.2">
+              </a-plane>
+              <a-plane id="imgcol4" src="#murost1" static-body="sphereRadius: NaN" src="#murost1" width="20"
+                  height="20" position="-10.66418 1.96127 31.10132" rotation="0 180 0" static-body
+                  scale="0.024 0.08 0.05">
+              </a-plane>
+              <a-plane id="panel" visible="false" static-body="sphereRadius: NaN" width="20" height="20"
+                  position="-11.93762 2.46799 28.24363" rotation="0 0 0" static-body scale="0.15 0.036 0.5">
+              </a-plane>
+          </a-entity>
+      </a-box>
+      <!-------------------------------------------Stand6 ------------------------------------------------>
+
+      <a-box id="contenedor6" material="color: #03bfea"
+          geometry="primitive: plane; skipCache: false; buffer: true; radius: 0.1; height: 0.001; segmentsHeight: 1"
+          visible="true" rotation="0 -90 0" position="2.73786 0.82133 -18.43017">
+          <a-entity id="stand6" rotation="0 0 0" position="12 -1 -30">
+
+              <a-box static-body id="pared1" material="color: #03bfea" static-body="sphereRadius: NaN"
+                  position="-11.92073 1.58913 28.22172" static-body scale="3 2.5 0.04" color="#2f2fff"></a-box>
+              <a-box static-body id="pared2" geometry="depth: 3" rotation="0 90 0" material="color: #03bfea"
+                  static-body="sphereRadius: NaN" position="-13.41915 1.59 29.71183" static-body
+                  scale="3.03 2.5 0.015" color="#2f2fff"></a-box>
+
+              <a-box static-body id="muro4" geometry="depth: 3" rotation="0 90 0" material="color: #03bfea"
+                  static-body="sphereRadius: NaN" position="-10.66159 1.58048 31.15322" static-body
+                  scale="0.092 2.55 0.16" color="#2f2fff"></a-box>
+              <a-box id="caja1" geometry="depth: 3" rotation="0 90 0" material="color: #f4f4f4"
+                  static-body="sphereRadius: NaN" position="-13.23004 0.59932 30.68584" static-body
+                  scale="1 0.53 0.12" color="#2f2fff"></a-box>
+              <a-box id="caja6" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.045 0.55722 30.93588" static-body
+                  scale="0.46 0.4 0.01" color="#2f2fff"></a-box>
+              <a-box id="caja5" geometry="depth: 3; primitive: cylinder" rotation="0 0 90" material="color: "
+                  static-body="sphereRadius: NaN" position="-13.03013 0.58519 30.73318" static-body
+                  scale="0.015 0.01 0.015" color="#2f2fff"></a-box>
+              <a-box id="caja2" visible="true" geometry="depth: 3; primitive: cylinder" rotation="0 0 90"
+                  material="color: #FFF" static-body="sphereRadius: NaN" position="-13.02855 0.58375 30.63956"
+                  static-body scale="0.015 0.01 0.015" color="#2f2fff"></a-box>
+              <a-box static-body id="caja3" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.04476 0.56017 30.43775" static-body
+                  scale="0.46 0.4 0.01" color="#2f2fff"></a-box>
+              <a-box id="caja4" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.20476 0.82284 30.686" static-body
+                  scale="1 0.08 0.125" color="#2f2fff"></a-box>
+              <a-box static-body id="cajac4" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-10.64467 0.79565 30.76296" static-body
+                  scale="0.7 0.98 0.13" color="#2f2fff"></a-box>
+              <a-box static-body id="tabla" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.1787 1.55114 30.7087" static-body
+                  scale="1 0.025 0.13" color="#2f2fff"></a-box>
+              <a-box static-body id="tabla1" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.1787 2.2161 30.709" static-body
+                  scale="1 0.025 0.13" color="#2f2fff"></a-box>
+              <a-box id="techo1" geometry="depth: 3" rotation="0 0 0" material="color: #dbe2e6"
+                  static-body="sphereRadius: NaN" position="-12.12183 2.8439 28.36776" static-body
+                  scale="2.5 0.04 0.11" color="#2f2fff"></a-box>
+              <a-box static-bodyid="techo2" geometry="depth: 3" rotation="0 90 0" material="color: #dbe2e6"
+                  static-body="sphereRadius: NaN" position="-13.26473 2.84361 29.46904" static-body
+                  scale="2.53 0.04 0.1" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston" geometry="depth: 3" rotation="0 90 0" material="color: #e3eaed"
+                  static-body="sphereRadius: NaN" position="-10.46331 2.81367 29.67001" static-body
+                  scale="2.86 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston1" geometry="depth: 3" rotation="0 90 0" material="color: #e3eaed"
+                  static-body="sphereRadius: NaN" position="-10.57351 2.81367 29.67001" static-body
+                  scale="2.86 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston2" geometry="depth: 3" rotation="0 90 0" material="color: #e1e4e8"
+                  static-body="sphereRadius: NaN" position="-10.6802 2.81482 29.67371" static-body
+                  scale="2.86 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston3" geometry="depth: 3" rotation="0 90 0" material="color: #e3eaed"
+                  static-body="sphereRadius: NaN" position="-10.78291 2.81367 29.67001" static-body
+                  scale="2.86 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston4" geometry="depth: 3" rotation="0 90 0" material="color: #e3eaed"
+                  static-body="sphereRadius: NaN" position="-10.88925 2.81367 29.67001" static-body
+                  scale="2.86 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-bodyid="techolisth" geometry="depth: 3" rotation="0 0 0" material="color: #d8e1e9"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.8135 30.73497" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techolisth1" geometry="depth: 3" rotation="0 0 0" material="color: #d8e1e9"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.81141 30.83995" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box id="techolisth2" geometry="depth: 3" rotation="0 0 0" material="color: #d8e1e9"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.81093 30.94764" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techolisth3" geometry="depth: 3" rotation="0 0 0" material="color: #e4eaec"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.81245 31.05613" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techolisth4" geometry="depth: 3" rotation="0 0 0" material="color: #e5ebf0"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.81761 31.16" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+
+              <a-box id="lampara" geometry="depth: 3; primitive: cylinder" rotation="0 0 0"
+                  material="color: #ffffff; emissive: #1e1e1e" static-body="sphereRadius: NaN"
+                  position="-13.22667 2.81935 29.84401" static-body scale="0.07 0.03 0.07" color="#2f2fff">
+              </a-box>
+              <a-box id="lampara1" geometry="depth: 3; primitive: cylinder" rotation="0 0 0"
+                  material="color: #ffffff; emissive: #1e1e1e" static-body="sphereRadius: NaN"
+                  position="-13.23848 2.81935 28.92018" static-body scale="0.07 0.03 0.07" color="#2f2fff">
+              </a-box>
+              <a-box id="lampara2" geometry="depth: 3; primitive: cylinder" rotation="0 0 0"
+                  material="color: #ffffff; emissive: #1e1e1e" static-body="sphereRadius: NaN"
+                  position="-12.63923 2.81935 28.39276" static-body scale="0.07 0.03 0.07" color="#2f2fff">
+              </a-box>
+              <a-box id="lampara3" geometry="depth: 3; primitive: cylinder" rotation="0 0 0"
+                  material="color: #ffffff; emissive: #1e1e1e" static-body="sphereRadius: NaN"
+                  position="-11.61025 2.81935 28.38695" static-body scale="0.07 0.03 0.07" color="#2f2fff">
+              </a-box>
+
+              <!-- imagenes -->
+              <a-plane id="imgcaja4" static-body="sphereRadius: NaN" src="#cajast1"
+                  onclick='NewTab("https://ninus.co/es/")' width="20" height="20"
+                  position="-10.44524 0.79666 30.76648" rotation="0 90 0" static-body scale="0.035 0.0485 0.5">
+              </a-plane>
+              <a-plane id="imgpared1" static-body="sphereRadius: NaN" src="#fondost1"
+                  onclick='NewTab("https://ninus.co/es/")' width="20" height="20"
+                  position="-13.378 1.55393 29.18707" rotation="0 90 0" static-body scale="0.095 0.125 0.5">
+              </a-plane>
+              <a-plane id="imgpared2" static-body="sphereRadius: NaN" src="#paredst1" width="20" height="20"
+                  position="-11.93797 1.66341 28.24805" rotation="0 0 0" static-body scale="0.15 0.045 0.2">
+              </a-plane>
+              <a-plane id="imgcol4" src="#murost1" static-body="sphereRadius: NaN" src="#murost1" width="20"
+                  height="20" position="-10.66418 1.96127 31.10132" rotation="0 180 0" static-body
+                  scale="0.024 0.08 0.05">
+              </a-plane>
+              <a-plane id="panel" visible="false" static-body="sphereRadius: NaN" width="20" height="20"
+                  position="-11.93762 2.46799 28.24363" rotation="0 0 0" static-body scale="0.15 0.036 0.5">
+              </a-plane>
+          </a-entity>
+      </a-box>
+
+      <!-------------------------------------------Stand7 ------------------------------------------------>
+
+      <a-box id="contenedor7" material="color: #03bfea"
+          geometry="primitive: plane; skipCache: false; buffer: true; radius: 0.1; height: 0.001; segmentsHeight: 1"
+          visible="true" rotation="0 -90 0" position="5.84375 0.82133 -18.41524">
+          <a-entity id="stand7" rotation="0 0 0" position="12 -1 -30">
+
+              <a-box static-body id="pared1" material="color: #03bfea" static-body="sphereRadius: NaN"
+                  position="-11.92073 1.58913 28.22172" static-body scale="3 2.5 0.04" color="#2f2fff"></a-box>
+              <a-box static-body id="pared2" geometry="depth: 3" rotation="0 90 0" material="color: #03bfea"
+                  static-body="sphereRadius: NaN" position="-13.41915 1.59 29.71183" static-body
+                  scale="3.03 2.5 0.015" color="#2f2fff"></a-box>
+
+              <a-box static-body id="muro4" geometry="depth: 3" rotation="0 90 0" material="color: #03bfea"
+                  static-body="sphereRadius: NaN" position="-10.66159 1.58048 31.15322" static-body
+                  scale="0.092 2.55 0.16" color="#2f2fff"></a-box>
+              <a-box id="caja1" geometry="depth: 3" rotation="0 90 0" material="color: #f4f4f4"
+                  static-body="sphereRadius: NaN" position="-13.23004 0.59932 30.68584" static-body
+                  scale="1 0.53 0.12" color="#2f2fff"></a-box>
+              <a-box id="caja6" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.045 0.55722 30.93588" static-body
+                  scale="0.46 0.4 0.01" color="#2f2fff"></a-box>
+              <a-box id="caja5" geometry="depth: 3; primitive: cylinder" rotation="0 0 90" material="color: "
+                  static-body="sphereRadius: NaN" position="-13.03013 0.58519 30.73318" static-body
+                  scale="0.015 0.01 0.015" color="#2f2fff"></a-box>
+              <a-box id="caja2" visible="true" geometry="depth: 3; primitive: cylinder" rotation="0 0 90"
+                  material="color: #FFF" static-body="sphereRadius: NaN" position="-13.02855 0.58375 30.63956"
+                  static-body scale="0.015 0.01 0.015" color="#2f2fff"></a-box>
+              <a-box static-body id="caja3" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.04476 0.56017 30.43775" static-body
+                  scale="0.46 0.4 0.01" color="#2f2fff"></a-box>
+              <a-box id="caja4" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.20476 0.82284 30.686" static-body
+                  scale="1 0.08 0.125" color="#2f2fff"></a-box>
+              <a-box static-body id="cajac4" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-10.64467 0.79565 30.76296" static-body
+                  scale="0.7 0.98 0.13" color="#2f2fff"></a-box>
+              <a-box static-body id="tabla" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.1787 1.55114 30.7087" static-body
+                  scale="1 0.025 0.13" color="#2f2fff"></a-box>
+              <a-box static-body id="tabla1" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.1787 2.2161 30.709" static-body
+                  scale="1 0.025 0.13" color="#2f2fff"></a-box>
+              <a-box id="techo1" geometry="depth: 3" rotation="0 0 0" material="color: #dbe2e6"
+                  static-body="sphereRadius: NaN" position="-12.12183 2.8439 28.36776" static-body
+                  scale="2.5 0.04 0.11" color="#2f2fff"></a-box>
+              <a-box static-bodyid="techo2" geometry="depth: 3" rotation="0 90 0" material="color: #dbe2e6"
+                  static-body="sphereRadius: NaN" position="-13.26473 2.84361 29.46904" static-body
+                  scale="2.53 0.04 0.1" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston" geometry="depth: 3" rotation="0 90 0" material="color: #e3eaed"
+                  static-body="sphereRadius: NaN" position="-10.46331 2.81367 29.67001" static-body
+                  scale="2.86 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston1" geometry="depth: 3" rotation="0 90 0" material="color: #e3eaed"
+                  static-body="sphereRadius: NaN" position="-10.57351 2.81367 29.67001" static-body
+                  scale="2.86 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston2" geometry="depth: 3" rotation="0 90 0" material="color: #e1e4e8"
+                  static-body="sphereRadius: NaN" position="-10.6802 2.81482 29.67371" static-body
+                  scale="2.86 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston3" geometry="depth: 3" rotation="0 90 0" material="color: #e3eaed"
+                  static-body="sphereRadius: NaN" position="-10.78291 2.81367 29.67001" static-body
+                  scale="2.86 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston4" geometry="depth: 3" rotation="0 90 0" material="color: #e3eaed"
+                  static-body="sphereRadius: NaN" position="-10.88925 2.81367 29.67001" static-body
+                  scale="2.86 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-bodyid="techolisth" geometry="depth: 3" rotation="0 0 0" material="color: #d8e1e9"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.8135 30.73497" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techolisth1" geometry="depth: 3" rotation="0 0 0" material="color: #d8e1e9"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.81141 30.83995" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box id="techolisth2" geometry="depth: 3" rotation="0 0 0" material="color: #d8e1e9"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.81093 30.94764" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techolisth3" geometry="depth: 3" rotation="0 0 0" material="color: #e4eaec"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.81245 31.05613" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techolisth4" geometry="depth: 3" rotation="0 0 0" material="color: #e5ebf0"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.81761 31.16" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+
+              <a-box id="lampara" geometry="depth: 3; primitive: cylinder" rotation="0 0 0"
+                  material="color: #ffffff; emissive: #1e1e1e" static-body="sphereRadius: NaN"
+                  position="-13.22667 2.81935 29.84401" static-body scale="0.07 0.03 0.07" color="#2f2fff">
+              </a-box>
+              <a-box id="lampara1" geometry="depth: 3; primitive: cylinder" rotation="0 0 0"
+                  material="color: #ffffff; emissive: #1e1e1e" static-body="sphereRadius: NaN"
+                  position="-13.23848 2.81935 28.92018" static-body scale="0.07 0.03 0.07" color="#2f2fff">
+              </a-box>
+              <a-box id="lampara2" geometry="depth: 3; primitive: cylinder" rotation="0 0 0"
+                  material="color: #ffffff; emissive: #1e1e1e" static-body="sphereRadius: NaN"
+                  position="-12.63923 2.81935 28.39276" static-body scale="0.07 0.03 0.07" color="#2f2fff">
+              </a-box>
+              <a-box id="lampara3" geometry="depth: 3; primitive: cylinder" rotation="0 0 0"
+                  material="color: #ffffff; emissive: #1e1e1e" static-body="sphereRadius: NaN"
+                  position="-11.61025 2.81935 28.38695" static-body scale="0.07 0.03 0.07" color="#2f2fff">
+              </a-box>
+
+              <!-- imagenes -->
+              <a-plane id="imgcaja4" static-body="sphereRadius: NaN" src="#cajast1"
+                  onclick='NewTab("https://ninus.co/es/")' width="20" height="20"
+                  position="-10.44524 0.79666 30.76648" rotation="0 90 0" static-body scale="0.035 0.0485 0.5">
+              </a-plane>
+              <a-plane id="imgpared1" static-body="sphereRadius: NaN" src="#fondost1"
+                  onclick='NewTab("https://ninus.co/es/")' width="20" height="20"
+                  position="-13.378 1.55393 29.18707" rotation="0 90 0" static-body scale="0.095 0.125 0.5">
+              </a-plane>
+              <a-plane id="imgpared2" static-body="sphereRadius: NaN" src="#paredst1" width="20" height="20"
+                  position="-11.93797 1.66341 28.24805" rotation="0 0 0" static-body scale="0.15 0.045 0.2">
+              </a-plane>
+              <a-plane id="imgcol4" src="#murost1" static-body="sphereRadius: NaN" src="#murost1" width="20"
+                  height="20" position="-10.66418 1.96127 31.10132" rotation="0 180 0" static-body
+                  scale="0.024 0.08 0.05">
+              </a-plane>
+              <a-plane id="panel" visible="false" static-body="sphereRadius: NaN" width="20" height="20"
+                  position="-11.93762 2.46799 28.24363" rotation="0 0 0" static-body scale="0.15 0.036 0.5">
+              </a-plane>
+          </a-entity>
+      </a-box>
+      <!-------------------- Stand8---------------------------------------------------------------------------- -->
+      <a-box id="contenedor8" material="color: #03bfea"
+          geometry="primitive: plane; skipCache: false; buffer: true; radius: 0.1; height: 0.001; segmentsHeight: 1"
+          visible="true" rotation="0 270 0" position="8.896 0.82133 -18.42421">
+          <a-entity id="stand8" rotation="0 0 0" position="12 -1 -30">
+
+              <a-box static-body id="pared1" rotation="0 0 0" material="color: #03bfea"
+                  static-body="sphereRadius: NaN" position="-11.92056 1.56484 31.15809" static-body
+                  scale="3 2.5 0.04" color="#2f2fff"></a-box>
+              <a-box static-body id="pared2" geometry="depth: 3" rotation="0 90 0" material="color: #03bfea"
+                  static-body="sphereRadius: NaN" position="-13.41915 1.59 29.71183" static-body
+                  scale="3.03 2.5 0.015" color="#2f2fff"></a-box>
+              <a-box static-body id="muro" geometry="depth: 3" rotation="0 90 0" material="color: #03bfea"
+                  static-body="sphereRadius: NaN" position="-10.65196 1.48591 28.24414" static-body
+                  scale="0.092 2.69 0.16" color="#2f2fff"></a-box>
+              <a-box id="caja1" geometry="depth: 3" rotation="0 90 0" material="color: #f4f4f4"
+                  static-body="sphereRadius: NaN" position="-13.23004 0.59932 30.68584" static-body
+                  scale="1 0.53 0.12" color="#2f2fff"></a-box>
+              <a-box id="caja6" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.045 0.55722 30.93588" static-body
+                  scale="0.46 0.4 0.01" color="#2f2fff"></a-box>
+              <a-box id="caja5" geometry="depth: 3; primitive: cylinder" rotation="0 0 90" material="color: "
+                  static-body="sphereRadius: NaN" position="-13.03013 0.58519 30.73318" static-body
+                  scale="0.015 0.01 0.015" color="#2f2fff"></a-box>
+              <a-box id="caja2" visible="true" geometry="depth: 3; primitive: cylinder" rotation="0 0 90"
+                  material="color: #FFF" static-body="sphereRadius: NaN" position="-13.02855 0.58375 30.63956"
+                  static-body scale="0.015 0.01 0.015" color="#2f2fff"></a-box>
+              <a-box static-body id="caja3" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.04476 0.56017 30.43775" static-body
+                  scale="0.46 0.4 0.01" color="#2f2fff"></a-box>
+              <a-box id="caja4" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.20476 0.82284 30.686" static-body
+                  scale="1 0.08 0.125" color="#2f2fff"></a-box>
+              <a-box static-body id="caja" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-10.56805 0.67987 28.64446" static-body
+                  scale="0.7 0.98 0.13" color="#2f2fff"></a-box>
+              <a-box static-body id="tabla" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.1787 1.55114 30.7087" static-body
+                  scale="1 0.025 0.13" color="#2f2fff"></a-box>
+              <a-box static-body id="tabla1" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.1787 2.2161 30.709" static-body
+                  scale="1 0.025 0.13" color="#2f2fff"></a-box>
+              <a-box id="techo1" geometry="depth: 3" rotation="0 0 0" material="color: #dbe2e6"
+                  static-body="sphereRadius: NaN" position="-12.16455 2.8439 31.04211" static-body
+                  scale="2.5 0.04 0.11" color="#2f2fff"></a-box>
+              <a-box static-body id="techo2n" geometry="depth: 3" rotation="0 90 0" material="color: #dbe2e6"
+                  static-body="sphereRadius: NaN" position="-13.26473 2.84361 29.89907" static-body
+                  scale="2.53 0.04 0.1" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston" geometry="depth: 3" rotation="0 90 0" material="color: #e3eaed"
+                  static-body="sphereRadius: NaN" position="-10.46331 2.81367 29.72606" static-body
+                  scale="2.9 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston1" geometry="depth: 3" rotation="0 90 0" material="color: #e3eaed"
+                  static-body="sphereRadius: NaN" position="-10.57351 2.81367 29.726" static-body
+                  scale="2.9 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston2" geometry="depth: 3" rotation="0 90 0" material="color: #e1e4e8"
+                  static-body="sphereRadius: NaN" position="-10.6802 2.81482 29.726" static-body
+                  scale="2.9 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston3" geometry="depth: 3" rotation="0 90 0" material="color: #e3eaed"
+                  static-body="sphereRadius: NaN" position="-10.78291 2.81367 29.726" static-body
+                  scale="2.9 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston4" geometry="depth: 3" rotation="0 90 0" material="color: #e3eaed"
+                  static-body="sphereRadius: NaN" position="-10.88925 2.81367 29.726" static-body
+                  scale="2.9 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box id="techolisth" geometry="depth: 3" rotation="0 0 0" material="color: #d8e1e9"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.812 28.679" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techolisth1" geometry="depth: 3" rotation="0 0 0" material="color: #d8e1e9"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.812 28.23474" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box id="techolisth2" geometry="depth: 3" rotation="0 0 0" material="color: #d8e1e9"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.812 28.457" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techolisth3" geometry="depth: 3" rotation="0 0 0" material="color: #e4eaec"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.81245 28.346" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techolisth4" geometry="depth: 3" rotation="0 0 0" material="color: #e5ebf0"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.812 28.568" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+
+              <a-box id="lampara" geometry="depth: 3; primitive: cylinder" rotation="0 0 0"
+                  material="color: #ffffff; emissive: #1e1e1e" static-body="sphereRadius: NaN"
+                  position="-13.22667 2.81935 30.24712" static-body scale="0.07 0.03 0.07" color="#2f2fff">
+              </a-box>
+              <a-box id="lampara1" geometry="depth: 3; primitive: cylinder" rotation="0 0 0"
+                  material="color: #ffffff; emissive: #1e1e1e" static-body="sphereRadius: NaN"
+                  position="-13.26175 2.81935 29.34214" static-body scale="0.07 0.03 0.07" color="#2f2fff">
+              </a-box>
+              <a-box id="lampara2" geometry="depth: 3; primitive: cylinder" rotation="0 0 0"
+                  material="color: #ffffff; emissive: #1e1e1e" static-body="sphereRadius: NaN"
+                  position="-12.63923 2.81935 30.99159" static-body scale="0.07 0.03 0.07" color="#2f2fff">
+              </a-box>
+              <a-box id="lampara3" geometry="depth: 3; primitive: cylinder" rotation="0 0 0"
+                  material="color: #ffffff; emissive: #1e1e1e" static-body="sphereRadius: NaN"
+                  position="-11.61025 2.81935 30.99476" static-body scale="0.07 0.03 0.07" color="#2f2fff">
+              </a-box>
+
+              <!-- imagenes -->
+              <a-plane id="imgcaja" static-body="sphereRadius: NaN" src="#cajast1"
+                  onclick='NewTab("https://ninus.co/es/")' width="20" height="20"
+                  position="-10.36555 0.66836 28.63731" rotation="0 90 0" static-body scale="0.035 0.05 0.5">
+              </a-plane>
+              <a-plane id="imgpared1" static-body="sphereRadius: NaN" src="#fondost1"
+                  onclick='NewTab("https://ninus.co/es/")' width="20" height="20"
+                  position="-13.378 1.55393 29.22011" rotation="0 90 0" static-body scale="0.095 0.125 0.5">
+              </a-plane>
+              <a-plane id="imgpared22" static-body="sphereRadius: NaN" src="#paredst1" width="20" height="20"
+                  position="-11.93797 1.66341 31.12663" rotation="0 180 0" static-body scale="0.15 0.045 0.2">
+              </a-plane>
+              <a-plane id="imgcol" src="#murost1" static-body="sphereRadius: NaN" src="#murost1" width="20"
+                  height="20" position="-10.6471 1.48705 28.19314" rotation="0 180 0" static-body
+                  scale="0.024 0.1345 0.05">
+              </a-plane>
+              <a-plane id="panel" visible="false" static-body="sphereRadius: NaN" width="20" height="20"
+                  position="-11.93762 2.46799 28.24363" rotation="0 0 0" static-body scale="0.15 0.036 0.5">
+              </a-plane>
+          </a-entity>
+      </a-box>
+
+
+      <!-------------------- Stand9---------------------------------------------------------------------------- -->
+      <a-box id="contenedor9" material="color: #03bfea"
+          geometry="primitive: plane; skipCache: false; buffer: true; radius: 0.1; height: 0.001; segmentsHeight: 1"
+          visible="true" rotation="0 180 0" position="12.86113 0.82133 -8.27836">
+          <a-entity id="stand9" rotation="0 0 0" position="12 -1 -30">
+
+              <a-box static-body id="pared1" rotation="0 0 0" material="color: #03bfea"
+                  static-body="sphereRadius: NaN" position="-11.92056 1.56484 31.15809" static-body
+                  scale="3 2.5 0.04" color="#2f2fff"></a-box>
+              <a-box static-body id="pared2" geometry="depth: 3" rotation="0 90 0" material="color: #03bfea"
+                  static-body="sphereRadius: NaN" position="-13.41915 1.59 29.71183" static-body
+                  scale="3.03 2.5 0.015" color="#2f2fff"></a-box>
+              <a-box static-body id="muro" geometry="depth: 3" rotation="0 90 0" material="color: #03bfea"
+                  static-body="sphereRadius: NaN" position="-10.65196 1.48591 28.24414" static-body
+                  scale="0.092 2.69 0.16" color="#2f2fff"></a-box>
+              <a-box id="caja1" geometry="depth: 3" rotation="0 90 0" material="color: #f4f4f4"
+                  static-body="sphereRadius: NaN" position="-13.23004 0.59932 30.68584" static-body
+                  scale="1 0.53 0.12" color="#2f2fff"></a-box>
+              <a-box id="caja6" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.045 0.55722 30.93588" static-body
+                  scale="0.46 0.4 0.01" color="#2f2fff"></a-box>
+              <a-box id="caja5" geometry="depth: 3; primitive: cylinder" rotation="0 0 90" material="color: "
+                  static-body="sphereRadius: NaN" position="-13.03013 0.58519 30.73318" static-body
+                  scale="0.015 0.01 0.015" color="#2f2fff"></a-box>
+              <a-box id="caja2" visible="true" geometry="depth: 3; primitive: cylinder" rotation="0 0 90"
+                  material="color: #FFF" static-body="sphereRadius: NaN" position="-13.02855 0.58375 30.63956"
+                  static-body scale="0.015 0.01 0.015" color="#2f2fff"></a-box>
+              <a-box static-body id="caja3" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.04476 0.56017 30.43775" static-body
+                  scale="0.46 0.4 0.01" color="#2f2fff"></a-box>
+              <a-box id="caja4" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.20476 0.82284 30.686" static-body
+                  scale="1 0.08 0.125" color="#2f2fff"></a-box>
+              <a-box static-body id="caja" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-10.56805 0.67987 28.64446" static-body
+                  scale="0.7 0.98 0.13" color="#2f2fff"></a-box>
+              <a-box static-body id="tabla" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.1787 1.55114 30.7087" static-body
+                  scale="1 0.025 0.13" color="#2f2fff"></a-box>
+              <a-box static-body id="tabla1" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.1787 2.2161 30.709" static-body
+                  scale="1 0.025 0.13" color="#2f2fff"></a-box>
+              <a-box id="techo1" geometry="depth: 3" rotation="0 0 0" material="color: #dbe2e6"
+                  static-body="sphereRadius: NaN" position="-12.16455 2.8439 31.04211" static-body
+                  scale="2.5 0.04 0.11" color="#2f2fff"></a-box>
+              <a-box static-body id="techo2n" geometry="depth: 3" rotation="0 90 0" material="color: #dbe2e6"
+                  static-body="sphereRadius: NaN" position="-13.26473 2.84361 29.89907" static-body
+                  scale="2.53 0.04 0.1" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston" geometry="depth: 3" rotation="0 90 0" material="color: #e3eaed"
+                  static-body="sphereRadius: NaN" position="-10.46331 2.81367 29.72606" static-body
+                  scale="2.9 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston1" geometry="depth: 3" rotation="0 90 0" material="color: #e3eaed"
+                  static-body="sphereRadius: NaN" position="-10.57351 2.81367 29.726" static-body
+                  scale="2.9 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston2" geometry="depth: 3" rotation="0 90 0" material="color: #e1e4e8"
+                  static-body="sphereRadius: NaN" position="-10.6802 2.81482 29.726" static-body
+                  scale="2.9 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston3" geometry="depth: 3" rotation="0 90 0" material="color: #e3eaed"
+                  static-body="sphereRadius: NaN" position="-10.78291 2.81367 29.726" static-body
+                  scale="2.9 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston4" geometry="depth: 3" rotation="0 90 0" material="color: #e3eaed"
+                  static-body="sphereRadius: NaN" position="-10.88925 2.81367 29.726" static-body
+                  scale="2.9 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box id="techolisth" geometry="depth: 3" rotation="0 0 0" material="color: #d8e1e9"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.812 28.679" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techolisth1" geometry="depth: 3" rotation="0 0 0" material="color: #d8e1e9"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.812 28.23474" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box id="techolisth2" geometry="depth: 3" rotation="0 0 0" material="color: #d8e1e9"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.812 28.457" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techolisth3" geometry="depth: 3" rotation="0 0 0" material="color: #e4eaec"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.81245 28.346" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techolisth4" geometry="depth: 3" rotation="0 0 0" material="color: #e5ebf0"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.812 28.568" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+
+              <a-box id="lampara" geometry="depth: 3; primitive: cylinder" rotation="0 0 0"
+                  material="color: #ffffff; emissive: #1e1e1e" static-body="sphereRadius: NaN"
+                  position="-13.22667 2.81935 30.24712" static-body scale="0.07 0.03 0.07" color="#2f2fff">
+              </a-box>
+              <a-box id="lampara1" geometry="depth: 3; primitive: cylinder" rotation="0 0 0"
+                  material="color: #ffffff; emissive: #1e1e1e" static-body="sphereRadius: NaN"
+                  position="-13.26175 2.81935 29.34214" static-body scale="0.07 0.03 0.07" color="#2f2fff">
+              </a-box>
+              <a-box id="lampara2" geometry="depth: 3; primitive: cylinder" rotation="0 0 0"
+                  material="color: #ffffff; emissive: #1e1e1e" static-body="sphereRadius: NaN"
+                  position="-12.63923 2.81935 30.99159" static-body scale="0.07 0.03 0.07" color="#2f2fff">
+              </a-box>
+              <a-box id="lampara3" geometry="depth: 3; primitive: cylinder" rotation="0 0 0"
+                  material="color: #ffffff; emissive: #1e1e1e" static-body="sphereRadius: NaN"
+                  position="-11.61025 2.81935 30.99476" static-body scale="0.07 0.03 0.07" color="#2f2fff">
+              </a-box>
+
+              <!-- imagenes -->
+              <a-plane id="imgcaja" static-body="sphereRadius: NaN" src="#cajast1"
+                  onclick='NewTab("https://ninus.co/es/")' width="20" height="20"
+                  position="-10.36555 0.66836 28.63731" rotation="0 90 0" static-body scale="0.035 0.05 0.5">
+              </a-plane>
+              <a-plane id="imgpared1" static-body="sphereRadius: NaN" src="#fondost1"
+                  onclick='NewTab("https://ninus.co/es/")' width="20" height="20"
+                  position="-13.378 1.55393 29.22011" rotation="0 90 0" static-body scale="0.095 0.125 0.5">
+              </a-plane>
+              <a-plane id="imgpared22" static-body="sphereRadius: NaN" src="#paredst1" width="20" height="20"
+                  position="-11.93797 1.66341 31.12663" rotation="0 180 0" static-body scale="0.15 0.045 0.2">
+              </a-plane>
+              <a-plane id="imgcol" src="#murost1" static-body="sphereRadius: NaN" src="#murost1" width="20"
+                  height="20" position="-10.6471 1.48705 28.19314" rotation="0 180 0" static-body
+                  scale="0.024 0.1345 0.05">
+              </a-plane>
+              <a-plane id="panel" visible="false" static-body="sphereRadius: NaN" width="20" height="20"
+                  position="-11.93762 2.46799 28.24363" rotation="0 0 0" static-body scale="0.15 0.036 0.5">
+              </a-plane>
+          </a-entity>
+      </a-box>
+
+      <!-------------------------------------------Stand10------------------------------------------------>
+
+      <a-box id="contenedor10" material="color: #03bfea"
+          geometry="primitive: plane; skipCache: false; buffer: true; radius: 0.1; height: 0.001; segmentsHeight: 1"
+          visible="true" rotation="0 180.01 0" position="12.85976 0.82133 -11.32003">
+          <a-entity id="stand10" rotation="0 0 0" position="12 -1 -30">
+
+              <a-box static-body id="pared11" material="color:#03bfea" static-body="sphereRadius: NaN"
+                  position="-11.92073 1.58913 28.22172" static-body scale="3 2.5 0.04" color="#2f2fff"></a-box>
+              <a-box static-body id="pared21" geometry="depth: 3" rotation="0 90 0" material="color: #03bfea"
+                  static-body="sphereRadius: NaN" position="-13.41915 1.59 29.71183" static-body
+                  scale="3.03 2.5 0.015" color="#2f2fff"></a-box>
+              <a-box static-body id="muro1" geometry="depth: 3" rotation="0 90 0" material="color: #03bfea"
+                  static-body="sphereRadius: NaN" position="-10.65353 1.58542 31.14873" static-body
+                  scale="0.092 2.55 0.16" color="#2f2fff"></a-box>
+              <a-box id="caja11" geometry="depth: 3" rotation="0 90 0" material="color: #f4f4f4"
+                  static-body="sphereRadius: NaN" position="-13.23004 0.59932 30.68584" static-body
+                  scale="1 0.53 0.12" color="#2f2fff"></a-box>
+              <a-box id="caja61" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.045 0.55722 30.93588" static-body
+                  scale="0.46 0.4 0.01" color="#2f2fff"></a-box>
+              <a-box id="caja51" geometry="depth: 3; primitive: cylinder" rotation="0 0 90" material="color: "
+                  static-body="sphereRadius: NaN" position="-13.03013 0.58519 30.73318" static-body
+                  scale="0.015 0.01 0.015" color="#2f2fff"></a-box>
+              <a-box id="caja21" visible="true" geometry="depth: 3; primitive: cylinder" rotation="0 0 90"
+                  material="color: #FFF" static-body="sphereRadius: NaN" position="-13.02855 0.58375 30.63956"
+                  static-body scale="0.015 0.01 0.015" color="#2f2fff"></a-box>
+              <a-box static-body id="caja3" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.04476 0.56017 30.43775" static-body
+                  scale="0.46 0.4 0.01" color="#2f2fff"></a-box>
+              <a-box id="caja4" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.20476 0.82284 30.686" static-body
+                  scale="1 0.08 0.125" color="#2f2fff"></a-box>
+              <a-box static-body id="caja" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-10.66088 0.78075 30.76296" static-body
+                  scale="0.7 0.98 0.13" color="#2f2fff"></a-box>
+              <a-box static-body id="tabla" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.1787 1.55114 30.7087" static-body
+                  scale="1 0.025 0.13" color="#2f2fff"></a-box>
+              <a-box static-body id="tabla1" geometry="depth: 3" rotation="0 90 0" material="color: #f7f7f7"
+                  static-body="sphereRadius: NaN" position="-13.1787 2.2161 30.709" static-body
+                  scale="1 0.025 0.13" color="#2f2fff"></a-box>
+              <a-box id="techo1" geometry="depth: 3" rotation="0 0 0" material="color: #dbe2e6"
+                  static-body="sphereRadius: NaN" position="-12.12183 2.8439 28.36776" static-body
+                  scale="2.5 0.04 0.11" color="#2f2fff"></a-box>
+              <a-box static-bodyid="techo2" geometry="depth: 3" rotation="0 90 0" material="color: #dbe2e6"
+                  static-body="sphereRadius: NaN" position="-13.26473 2.84361 29.46904" static-body
+                  scale="2.53 0.04 0.1" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston" geometry="depth: 3" rotation="0 90 0" material="color: #e3eaed"
+                  static-body="sphereRadius: NaN" position="-10.46331 2.81367 29.67001" static-body
+                  scale="2.86 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston1" geometry="depth: 3" rotation="0 90 0" material="color: #e3eaed"
+                  static-body="sphereRadius: NaN" position="-10.57351 2.81367 29.67001" static-body
+                  scale="2.86 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston2" geometry="depth: 3" rotation="0 90 0" material="color: #e1e4e8"
+                  static-body="sphereRadius: NaN" position="-10.6802 2.81482 29.67371" static-body
+                  scale="2.86 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston3" geometry="depth: 3" rotation="0 90 0" material="color: #e3eaed"
+                  static-body="sphereRadius: NaN" position="-10.78291 2.81367 29.67001" static-body
+                  scale="2.86 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techoliston4" geometry="depth: 3" rotation="0 90 0" material="color: #e3eaed"
+                  static-body="sphereRadius: NaN" position="-10.88925 2.81367 29.67001" static-body
+                  scale="2.86 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-bodyid="techolisth" geometry="depth: 3" rotation="0 0 0" material="color: #d8e1e9"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.8135 30.73497" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techolisth1" geometry="depth: 3" rotation="0 0 0" material="color: #d8e1e9"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.81141 30.83995" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box id="techolisth2" geometry="depth: 3" rotation="0 0 0" material="color: #d8e1e9"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.81093 30.94764" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techolisth3" geometry="depth: 3" rotation="0 0 0" material="color: #e4eaec"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.81245 31.05613" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+              <a-box static-body id="techolisth4" geometry="depth: 3" rotation="0 0 0" material="color: #e5ebf0"
+                  static-body="sphereRadius: NaN" position="-12.13402 2.81761 31.16" static-body
+                  scale="2.53 0.1 0.025" color="#2f2fff"></a-box>
+
+              <a-box id="lampara" geometry="depth: 3; primitive: cylinder" rotation="0 0 0"
+                  material="color: #ffffff; emissive: #1e1e1e" static-body="sphereRadius: NaN"
+                  position="-13.22667 2.81935 29.84401" static-body scale="0.07 0.03 0.07" color="#2f2fff">
+              </a-box>
+              <a-box id="lampara1" geometry="depth: 3; primitive: cylinder" rotation="0 0 0"
+                  material="color: #ffffff; emissive: #1e1e1e" static-body="sphereRadius: NaN"
+                  position="-13.23848 2.81935 28.92018" static-body scale="0.07 0.03 0.07" color="#2f2fff">
+              </a-box>
+              <a-box id="lampara2" geometry="depth: 3; primitive: cylinder" rotation="0 0 0"
+                  material="color: #ffffff; emissive: #1e1e1e" static-body="sphereRadius: NaN"
+                  position="-12.63923 2.81935 28.39276" static-body scale="0.07 0.03 0.07" color="#2f2fff">
+              </a-box>
+              <a-box id="lampara3" geometry="depth: 3; primitive: cylinder" rotation="0 0 0"
+                  material="color: #ffffff; emissive: #1e1e1e" static-body="sphereRadius: NaN"
+                  position="-11.61025 2.81935 28.38695" static-body scale="0.07 0.03 0.07" color="#2f2fff">
+              </a-box>
+
+              <!-- imagenes -->
+              <a-plane id="imgcaja" static-body="sphereRadius: NaN" src="#cajast1"
+                  onclick='NewTab("https://ninus.co/es/")' width="20" height="20"
+                  position="-10.46 0.77862 30.75179" rotation="0 90 0" static-body scale="0.035 0.05 0.5">
+              </a-plane>
+              <a-plane id="imgpared1" static-body="sphereRadius: NaN" src="#fondost1"
+                  onclick='NewTab("https://ninus.co/es/")' width="20" height="20"
+                  position="-13.378 1.55393 29.18707" rotation="0 90 0" static-body scale="0.095 0.125 0.5">
+              </a-plane>
+              <a-plane id="imgpared2" static-body="sphereRadius: NaN" src="#paredst1" width="20" height="20"
+                  position="-11.93797 1.66341 28.24805" rotation="0 0 0" static-body scale="0.15 0.045 0.2">
+              </a-plane>
+              <a-plane id="imgcol1" src="#murost1" static-body="sphereRadius: NaN" src="#murost1" width="20"
+                  height="20" position="-10.65269 1.58911 31.19859" rotation="0 0 0" static-body
+                  scale="0.024 0.127 0.05">
+              </a-plane>
+              <a-plane id="panel" visible="false" static-body="sphereRadius: NaN" width="20" height="20"
+                  position="-11.93762 2.46799 28.24363" rotation="0 0 0" static-body scale="0.15 0.036 0.5">
+              </a-plane>
+          </a-entity>
+      </a-box>
+
+  </a-entity>
+
+
+    <!-- Este node permite pausar la escena hasta que se ingrese un ID de sala -->
+    <a-node id="waitOnMe"> </a-node>
+
+  </a-scene>
+
+  <script>
+    // se sincronizan los avatar en su posición y rotación, ademas se agrega el la sincronización del nombre del jugador
+    // este Script debe ir en el docuimento HTML siempre
+    NAF.schemas.add({
+      template: '#avatar-template',
+      components: [
+        'position',
+        'rotation',
+        {
+          selector: '.head',
+          component: 'material',
+          property: 'color'
+        },
+        {
+          selector: '.nametag',
+          component: 'text',
+          property: 'value'
+        }
+      ]
+    });
+
+    // Called by Networked-Aframe when connected to server
+    function onConnect() {
+      console.log("onConnect", new Date());
+    }
+
+    // On mobile remove elements that are resource heavy
+    var isMobile = AFRAME.utils.device.isMobile();
+
+    if (isMobile) {
+      var particles = document.getElementById('particles');
+      particles.parentNode.removeChild(particles);
+    }
+
+      //aframe-watcher
+  </script>
+
+
+</body>
+
+</html>
